@@ -66,7 +66,7 @@ describe("Unit Test: InversifyExpressServer", () => {
         });
 
         let serverWithDefaultRouter = new InversifyExpressServer(container);
-        let serverWithCustomRouter = new InversifyExpressServer(container, customRouter);
+        let serverWithCustomRouter = new InversifyExpressServer(container, { customRouter });
 
         expect((serverWithDefaultRouter as any)._router === customRouter).to.eq(false);
         expect((serverWithCustomRouter as any)._router === customRouter).to.eqls(true);
@@ -82,7 +82,7 @@ describe("Unit Test: InversifyExpressServer", () => {
         };
 
         let serverWithDefaultConfig = new InversifyExpressServer(container);
-        let serverWithCustomConfig = new InversifyExpressServer(container, null, routingConfig);
+        let serverWithCustomConfig = new InversifyExpressServer(container, { routingConfig });
 
         expect((serverWithCustomConfig as any)._routingConfig).to.eq(routingConfig);
         expect((serverWithDefaultConfig as any)._routingConfig).to.not.eql(
@@ -95,7 +95,7 @@ describe("Unit Test: InversifyExpressServer", () => {
         let container = new Container();
         let app = express();
         let serverWithDefaultApp = new InversifyExpressServer(container);
-        let serverWithCustomApp = new InversifyExpressServer(container, null, null, app);
+        let serverWithCustomApp = new InversifyExpressServer(container, { customApp: app });
         expect((serverWithCustomApp as any)._app).to.eq(app);
         expect((serverWithDefaultApp as any)._app).to.not.eql((serverWithCustomApp as any)._app);
     });

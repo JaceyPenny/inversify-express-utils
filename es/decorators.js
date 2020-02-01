@@ -9,6 +9,7 @@ import { inject, injectable, decorate } from "inversify";
 import { TYPE, METADATA_KEY, PARAMETER_TYPE } from "./constants";
 export var injectHttpContext = inject(TYPE.HttpContext);
 export function controller(path) {
+    if (path === void 0) { path = ""; }
     var middleware = [];
     for (var _i = 1; _i < arguments.length; _i++) {
         middleware[_i - 1] = arguments[_i];

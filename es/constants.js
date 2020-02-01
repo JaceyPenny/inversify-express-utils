@@ -1,7 +1,8 @@
 export var TYPE = {
     AuthProvider: Symbol.for("AuthProvider"),
     Controller: Symbol.for("Controller"),
-    HttpContext: Symbol.for("HttpContext")
+    HttpContext: Symbol.for("HttpContext"),
+    FinishHandler: Symbol.for("FinishHandler"),
 };
 export var METADATA_KEY = {
     controller: "inversify-express-utils:controller",

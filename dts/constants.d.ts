@@ -2,6 +2,7 @@ export declare const TYPE: {
     AuthProvider: symbol;
     Controller: symbol;
     HttpContext: symbol;
+    FinishHandler: symbol;
 };
 export declare const METADATA_KEY: {
     controller: string;

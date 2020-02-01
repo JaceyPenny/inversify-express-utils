@@ -57,19 +57,24 @@ var InversifyExpressServer = /** @class */ (function () {
      * @param authProvider optional interfaces.AuthProvider auth provider
      * @param forceControllers optional boolean setting to force controllers (defaults do true)
      */
-    function InversifyExpressServer(container, customRouter, routingConfig, customApp, authProvider, forceControllers) {
-        if (forceControllers === void 0) { forceControllers = true; }
+    function InversifyExpressServer(container, options) {
+        if (options === void 0) { options = {}; }
         this._container = container;
-        this._forceControllers = forceControllers;
-        this._router = customRouter || express.Router();
-        this._routingConfig = routingConfig || {
+        this._forceControllers =
+            options.forceControllers === undefined ? true : options.forceControllers;
+        this._router = options.customRouter || express.Router();
+        this._routingConfig = options.routingConfig || {
             rootPath: DEFAULT_ROUTING_ROOT_PATH
         };
-        this._app = customApp || express();
-        if (authProvider) {
-            this._AuthProvider = authProvider;
+        this._app = options.customApp || express();
+        if (options.authProvider) {
+            this._AuthProvider = options.authProvider;
             container.bind(TYPE.AuthProvider)
                 .to(this._AuthProvider);
+        }
+        if (options.finishHandler) {
+            this._FinishHandler = options.finishHandler;
+            container.bind(TYPE.FinishHandler).to(this._FinishHandler);
         }
     }
     /**
@@ -151,7 +156,7 @@ var InversifyExpressServer = /** @class */ (function () {
             var methodMetadata = getControllerMethodMetadata(controller.constructor);
             var parameterMetadata = getControllerParameterMetadata(controller.constructor);
             if (controllerMetadata && methodMetadata) {
-                var controllerMiddleware_1 = _this.resolveMidleware.apply(_this, controllerMetadata.middleware);
+                var controllerMiddleware_1 = _this.resolveMiddleware.apply(_this, controllerMetadata.middleware);
                 methodMetadata.forEach(function (metadata) {
                     var _a;
                     var paramList = [];
@@ -159,14 +164,16 @@ var InversifyExpressServer = /** @class */ (function () {
                         paramList = parameterMetadata[metadata.key] || [];
                     }
                     var handler = _this.handlerFactory(controllerMetadata.target.name, metadata.key, paramList);
-                    var routeMiddleware = _this.resolveMidleware.apply(_this, metadata.middleware);
-                    (_a = _this._router)[metadata.method].apply(_a, __spreadArrays(["" + controllerMetadata.path + metadata.path], controllerMiddleware_1, routeMiddleware, [handler]));
+                    var routeMiddleware = _this.resolveMiddleware.apply(_this, metadata.middleware);
+                    var finishHandler = _this.resolveFinishHandler();
+                    (_a = _this._router)[metadata.method].apply(_a, __spreadArrays(["" + controllerMetadata.path + metadata.path], controllerMiddleware_1, routeMiddleware, [handler,
+                        finishHandler]));
                 });
             }
         });
         this._app.use(this._routingConfig.rootPath, this._router);
     };
-    InversifyExpressServer.prototype.resolveMidleware = function () {
+    InversifyExpressServer.prototype.resolveMiddleware = function () {
         var _this = this;
         var middleware = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -188,6 +195,14 @@ var InversifyExpressServer = /** @class */ (function () {
             return m;
         });
     };
+    InversifyExpressServer.prototype.resolveFinishHandler = function () {
+        if (this._FinishHandler) {
+            return this._container.get(TYPE.FinishHandler).handle;
+        }
+        else {
+            return function (_) { };
+        }
+    };
     InversifyExpressServer.prototype.copyHeadersTo = function (headers, target) {
         for (var _i = 0, _a = Object.keys(headers); _i < _a.length; _i++) {
             var name_1 = _a[_i];
@@ -197,22 +212,34 @@ var InversifyExpressServer = /** @class */ (function () {
     };
     InversifyExpressServer.prototype.handleHttpResponseMessage = function (message, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b;
+            var buffer, templateFilePath, templateData, _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         this.copyHeadersTo(message.headers, res);
-                        if (!(message.content !== undefined)) return [3 /*break*/, 2];
+                        if (!(message.content !== undefined)) return [3 /*break*/, 5];
                         this.copyHeadersTo(message.content.headers, res);
+                        if (!(message.content.type === "binary")) return [3 /*break*/, 1];
+                        buffer = message.content.content;
+                        res.status(message.statusCode).end(buffer);
+                        return [3 /*break*/, 4];
+                    case 1:
+                        if (!(message.content.type === "template")) return [3 /*break*/, 2];
+                        templateFilePath = message.content.templateFilePath;
+                        templateData = message.content.templateData;
+                        res.status(message.statusCode).render(templateFilePath, templateData);
+                        return [3 /*break*/, 4];
+                    case 2:
                         _b = (_a = res.status(message.statusCode)).send;
                         return [4 /*yield*/, message.content.readAsStringAsync()];
-                    case 1:
+                    case 3:
                         _b.apply(_a, [_c.sent()]);
-                        return [3 /*break*/, 3];
-                    case 2:
+                        _c.label = 4;
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
                         res.sendStatus(message.statusCode);
-                        _c.label = 3;
-                    case 3: return [2 /*return*/];
+                        _c.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -258,7 +285,9 @@ var InversifyExpressServer = /** @class */ (function () {
                             res.send(value);
                         }
                         _b.label = 7;
-                    case 7: return [3 /*break*/, 9];
+                    case 7:
+                        next();
+                        return [3 /*break*/, 9];
                     case 8:
                         err_1 = _b.sent();
                         next(err_1);
@@ -303,9 +332,9 @@ var InversifyExpressServer = /** @class */ (function () {
                     case 1: return [2 /*return*/, _a.sent()];
                     case 2: return [2 /*return*/, Promise.resolve({
                             details: null,
-                            isAuthenticated: function () { return Promise.resolve(false); },
-                            isInRole: function (role) { return Promise.resolve(false); },
-                            isResourceOwner: function (resourceId) { return Promise.resolve(false); }
+                            isAuthenticated: function () { return false; },
+                            isInRole: function (role) { return false; },
+                            isInState: function (state) { return false; },
                         })];
                 }
             });

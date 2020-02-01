@@ -1,6 +1,18 @@
 import * as express from "express";
 import * as inversify from "inversify";
 import { interfaces } from "./interfaces";
+interface InversifyExpressServerOptions {
+    customRouter?: express.Router | null;
+    routingConfig?: interfaces.RoutingConfig | null;
+    customApp?: express.Application | null;
+    authProvider?: {
+        new (): interfaces.AuthProvider;
+    } | null;
+    finishHandler?: {
+        new (): interfaces.FinishHandler;
+    } | null;
+    forceControllers?: boolean;
+}
 export declare class InversifyExpressServer {
     private _router;
     private _container;
@@ -9,6 +21,7 @@ export declare class InversifyExpressServer {
     private _errorConfigFn;
     private _routingConfig;
     private _AuthProvider;
+    private _FinishHandler;
     private _forceControllers;
     /**
      * Wrapper for the express server.
@@ -20,9 +33,7 @@ export declare class InversifyExpressServer {
      * @param authProvider optional interfaces.AuthProvider auth provider
      * @param forceControllers optional boolean setting to force controllers (defaults do true)
      */
-    constructor(container: inversify.interfaces.Container, customRouter?: express.Router | null, routingConfig?: interfaces.RoutingConfig | null, customApp?: express.Application | null, authProvider?: {
-        new (): interfaces.AuthProvider;
-    } | null, forceControllers?: boolean);
+    constructor(container: inversify.interfaces.Container, options?: InversifyExpressServerOptions);
     /**
      * Sets the configuration function to be applied to the application.
      * Note that the config function is not actually executed until a call to InversifyExpresServer.build().
@@ -46,7 +57,8 @@ export declare class InversifyExpressServer {
      */
     build(): express.Application;
     private registerControllers;
-    private resolveMidleware;
+    private resolveMiddleware;
+    private resolveFinishHandler;
     private copyHeadersTo;
     private handleHttpResponseMessage;
     private handlerFactory;
@@ -57,3 +69,4 @@ export declare class InversifyExpressServer {
     private getParam;
     private _getPrincipal;
 }
+export {};

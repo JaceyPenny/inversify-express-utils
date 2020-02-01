@@ -35,12 +35,15 @@ declare namespace interfaces {
     }
     interface Principal {
         details: any;
-        isAuthenticated(): Promise<boolean>;
-        isResourceOwner(resourceId: any): Promise<boolean>;
-        isInRole(role: string): Promise<boolean>;
+        isAuthenticated(): boolean;
+        isInState(state: string): boolean;
+        isInRole(role: string): boolean;
     }
     interface AuthProvider {
         getUser(req: express.Request, res: express.Response, next: express.NextFunction): Promise<Principal>;
+    }
+    interface FinishHandler {
+        handle(req: express.Request): void;
     }
     interface HttpContext {
         request: express.Request;

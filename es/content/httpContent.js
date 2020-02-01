@@ -9,6 +9,13 @@ var HttpContent = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(HttpContent.prototype, "type", {
+        get: function () {
+            return "text";
+        },
+        enumerable: true,
+        configurable: true
+    });
     return HttpContent;
 }());
 export { HttpContent };

@@ -1,7 +1,7 @@
 import { interfaces } from "./interfaces";
 import { PARAMETER_TYPE } from "./constants";
 export declare const injectHttpContext: (target: any, targetKey: string, index?: number | undefined) => void;
-export declare function controller(path: string, ...middleware: interfaces.Middleware[]): (target: any) => void;
+export declare function controller(path?: string, ...middleware: interfaces.Middleware[]): (target: any) => void;
 export declare function all(path: string, ...middleware: interfaces.Middleware[]): interfaces.HandlerDecorator;
 export declare function httpGet(path: string, ...middleware: interfaces.Middleware[]): interfaces.HandlerDecorator;
 export declare function httpPost(path: string, ...middleware: interfaces.Middleware[]): interfaces.HandlerDecorator;
