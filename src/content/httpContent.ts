@@ -7,5 +7,9 @@ export abstract class HttpContent {
     return this._headers;
   }
 
+  public get type(): "binary" | "text" | "template" {
+    return "text";
+  }
+
   public abstract readAsStringAsync(): Promise<string>;
 }

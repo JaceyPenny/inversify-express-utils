@@ -31,13 +31,13 @@ describe("AuthProvider", () => {
                 this.details = details;
             }
             public isAuthenticated() {
-                return Promise.resolve<boolean>(true);
+                return true;
             }
-            public isResourceOwner(resourceId: any) {
-                return Promise.resolve<boolean>(resourceId === 1111);
+            public isInState(state: string) {
+                return state === "enabled";
             }
-            public isInRole(role: string) {
-                return Promise.resolve<boolean>(role === "admin");
+            public isInRole(role: any) {
+                return role === "admin";
             }
         }
 
@@ -80,20 +80,18 @@ describe("AuthProvider", () => {
         const container = new Container();
 
         container.bind<SomeDependency>("SomeDependency")
-                .toConstantValue({ name: "SomeDependency!" });
+            .toConstantValue({ name: "SomeDependency!" });
 
         const server = new InversifyExpressServer(
             container,
-            null,
-            null,
-            null,
-            CustomAuthProvider
+            {
+                authProvider: CustomAuthProvider,
+            }
         );
 
         supertest(server.build())
             .get("/")
             .expect(200, `SomeDependency!@test.com & SomeDependency!`, done);
-
     });
 
 });

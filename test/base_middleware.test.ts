@@ -35,13 +35,13 @@ describe("BaseMiddleware", () => {
                 this.details = details;
             }
             public isAuthenticated() {
-                return Promise.resolve<boolean>(true);
+                return true;
             }
-            public isResourceOwner(resourceId: any) {
-                return Promise.resolve<boolean>(resourceId === 1111);
+            public isInState(state: any) {
+                return state === "enabled";
             }
             public isInRole(role: string) {
-                return Promise.resolve<boolean>(role === "admin");
+                return role === "admin";
             }
         }
 
@@ -112,10 +112,9 @@ describe("BaseMiddleware", () => {
 
         const server = new InversifyExpressServer(
             container,
-            null,
-            null,
-            null,
-            CustomAuthProvider
+            {
+                authProvider: CustomAuthProvider,
+            }
         );
 
         supertest(server.build())

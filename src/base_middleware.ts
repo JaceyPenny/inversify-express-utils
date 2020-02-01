@@ -5,7 +5,7 @@ import { interfaces } from "./interfaces";
 @injectable()
 export abstract class BaseMiddleware implements BaseMiddleware {
     // httpContext is initialized when the middleware is invoked
-    // see resolveMidleware in server.ts for more details
+    // see resolveMiddleware in server.ts for more details
     protected readonly httpContext: interfaces.HttpContext;
 
     protected bind<T>(serviceIdentifier: inversifyInterfaces.ServiceIdentifier<T>): inversifyInterfaces.BindingToSyntax<T> {

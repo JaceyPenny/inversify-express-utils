@@ -1,19 +1,12 @@
 import { expect } from "chai";
-import * as express from "express";
-import { Container, injectable } from "inversify";
+import { Container } from "inversify";
 import * as prettyjson from "prettyjson";
-import { METADATA_KEY, PARAMETER_TYPE, TYPE } from "../src/constants";
 import { cleanUpMetadata } from "../src/utils";
 import {
-    interfaces,
     InversifyExpressServer,
     controller,
-    httpMethod,
     httpGet,
-    request,
-    response,
     requestParam,
-    queryParam,
     httpPost,
     httpDelete,
     getRouteInfo,

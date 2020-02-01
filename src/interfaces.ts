@@ -45,11 +45,11 @@ namespace interfaces {
 
     export interface Principal {
         details: any;
-        isAuthenticated(): Promise<boolean>;
-        // Allows content-based auth
-        isResourceOwner(resourceId: any): Promise<boolean>;
+        isAuthenticated(): boolean;
+
+        isInState(state: string): boolean;
         // Allows role-based auth
-        isInRole(role: string): Promise<boolean>;
+        isInRole(role: string): boolean;
     }
 
     export interface AuthProvider {
@@ -58,6 +58,10 @@ namespace interfaces {
             res: express.Response,
             next: express.NextFunction
         ): Promise<Principal>;
+    }
+
+    export interface FinishHandler {
+        handle(req: express.Request): void;
     }
 
     export interface HttpContext {

@@ -1,7 +1,8 @@
 export const TYPE = {
     AuthProvider: Symbol.for("AuthProvider"),
     Controller: Symbol.for("Controller"),
-    HttpContext: Symbol.for("HttpContext")
+    HttpContext: Symbol.for("HttpContext"),
+    FinishHandler: Symbol.for("FinishHandler"),
 };
 
 export const METADATA_KEY = {

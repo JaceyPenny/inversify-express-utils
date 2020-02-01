@@ -20,6 +20,15 @@ import {
 import { HttpResponseMessage } from "./httpResponseMessage";
 import { OutgoingHttpHeaders } from "http";
 
+interface InversifyExpressServerOptions {
+    customRouter?: express.Router | null;
+    routingConfig?: interfaces.RoutingConfig | null;
+    customApp?: express.Application | null;
+    authProvider?: { new(): interfaces.AuthProvider } | null;
+    finishHandler?: { new(): interfaces.FinishHandler } | null;
+    forceControllers?: boolean;
+}
+
 export class InversifyExpressServer {
 
     private _router: express.Router;
@@ -29,6 +38,7 @@ export class InversifyExpressServer {
     private _errorConfigFn: interfaces.ConfigFunction;
     private _routingConfig: interfaces.RoutingConfig;
     private _AuthProvider: { new(): interfaces.AuthProvider };
+    private _FinishHandler: { new(): interfaces.FinishHandler };
     private _forceControllers: boolean;
 
     /**
@@ -43,23 +53,24 @@ export class InversifyExpressServer {
      */
     constructor(
         container: inversify.interfaces.Container,
-        customRouter?: express.Router | null,
-        routingConfig?: interfaces.RoutingConfig | null,
-        customApp?: express.Application | null,
-        authProvider?: { new(): interfaces.AuthProvider } | null,
-        forceControllers = true
+        options: InversifyExpressServerOptions = {},
     ) {
         this._container = container;
-        this._forceControllers = forceControllers;
-        this._router = customRouter || express.Router();
-        this._routingConfig = routingConfig || {
+        this._forceControllers =
+            options.forceControllers === undefined ? true : options.forceControllers;
+        this._router = options.customRouter || express.Router();
+        this._routingConfig = options.routingConfig || {
             rootPath: DEFAULT_ROUTING_ROOT_PATH
         };
-        this._app = customApp || express();
-        if (authProvider) {
-            this._AuthProvider = authProvider;
+        this._app = options.customApp || express();
+        if (options.authProvider) {
+            this._AuthProvider = options.authProvider;
             container.bind<interfaces.AuthProvider>(TYPE.AuthProvider)
                 .to(this._AuthProvider);
+        }
+        if (options.finishHandler) {
+            this._FinishHandler = options.finishHandler;
+            container.bind<interfaces.FinishHandler>(TYPE.FinishHandler).to(this._FinishHandler);
         }
     }
 
@@ -95,6 +106,7 @@ export class InversifyExpressServer {
     public build(): express.Application {
 
         const _self = this;
+
 
         // The very first middleware to be invoked
         // it creates a new httpContext and attaches it to the
@@ -163,7 +175,7 @@ export class InversifyExpressServer {
 
             if (controllerMetadata && methodMetadata) {
 
-                let controllerMiddleware = this.resolveMidleware(...controllerMetadata.middleware);
+                let controllerMiddleware = this.resolveMiddleware(...controllerMetadata.middleware);
 
                 methodMetadata.forEach((metadata: interfaces.ControllerMethodMetadata) => {
                     let paramList: interfaces.ParameterMetadata[] = [];
@@ -171,12 +183,14 @@ export class InversifyExpressServer {
                         paramList = parameterMetadata[metadata.key] || [];
                     }
                     let handler: express.RequestHandler = this.handlerFactory(controllerMetadata.target.name, metadata.key, paramList);
-                    let routeMiddleware = this.resolveMidleware(...metadata.middleware);
+                    let routeMiddleware = this.resolveMiddleware(...metadata.middleware);
+                    let finishHandler = this.resolveFinishHandler();
                     this._router[metadata.method](
                         `${controllerMetadata.path}${metadata.path}`,
                         ...controllerMiddleware,
                         ...routeMiddleware,
-                        handler
+                        handler,
+                        finishHandler,
                     );
                 });
             }
@@ -185,7 +199,7 @@ export class InversifyExpressServer {
         this._app.use(this._routingConfig.rootPath, this._router);
     }
 
-    private resolveMidleware(...middleware: interfaces.Middleware[]): express.RequestHandler[] {
+    private resolveMiddleware(...middleware: interfaces.Middleware[]): express.RequestHandler[] {
         return middleware.map(middlewareItem => {
             if (!this._container.isBound(middlewareItem)) {
                 return middlewareItem as express.RequestHandler;
@@ -210,6 +224,14 @@ export class InversifyExpressServer {
         });
     }
 
+    private resolveFinishHandler(): express.RequestHandler {
+        if (this._FinishHandler) {
+            return this._container.get<interfaces.FinishHandler>(TYPE.FinishHandler).handle;
+        } else {
+            return (_) => { /* do nothing */ };
+        }
+    }
+
     private copyHeadersTo(headers: OutgoingHttpHeaders, target: express.Response) {
         for (const name of Object.keys(headers)) {
             const headerValue = headers[name];
@@ -227,10 +249,19 @@ export class InversifyExpressServer {
         if (message.content !== undefined) {
             this.copyHeadersTo(message.content.headers, res);
 
-            res.status(message.statusCode)
-               // If the content is a number, ensure we change it to a string, else our content is treated
-               // as a statusCode rather than as the content of the Response
-               .send(await message.content.readAsStringAsync());
+            if (message.content.type === "binary") {
+                const buffer = (message.content as any).content;
+                res.status(message.statusCode).end(buffer);
+            } else if (message.content.type === "template") {
+                const templateFilePath = (message.content as any).templateFilePath;
+                const templateData = (message.content as any).templateData;
+                res.status(message.statusCode).render(templateFilePath, templateData);
+            } else {
+                res.status(message.statusCode)
+                    // If the content is a number, ensure we change it to a string, else our content is treated
+                    // as a statusCode rather than as the content of the Response
+                    .send(await message.content.readAsStringAsync());
+            }
         } else {
             res.sendStatus(message.statusCode);
         }
@@ -265,6 +296,7 @@ export class InversifyExpressServer {
                     }
                     res.send(value);
                 }
+                next();
             } catch (err) {
                 next(err);
             }
@@ -305,9 +337,9 @@ export class InversifyExpressServer {
         }
         return Promise.resolve<interfaces.Principal>({
             details: null,
-            isAuthenticated: () => Promise.resolve(false),
-            isInRole: (role: string) => Promise.resolve(false),
-            isResourceOwner: (resourceId: any) => Promise.resolve(false)
+            isAuthenticated: () => false,
+            isInRole: (role: string) => false,
+            isInState: (state: string) => false,
         });
     }
 

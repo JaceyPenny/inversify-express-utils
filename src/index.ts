@@ -10,9 +10,11 @@ import { BaseMiddleware } from "./base_middleware";
 import { cleanUpMetadata } from "./utils";
 import { getRouteInfo, getRawMetadata } from "./debug";
 import { HttpResponseMessage } from "./httpResponseMessage";
+import { TemplateContent } from "./content/templateContent";
 import { StringContent } from "./content/stringContent";
 import { JsonContent } from "./content/jsonContent";
 import { HttpContent } from "./content/httpContent";
+import { BinaryContent } from "./content/binaryContent";
 
 export {
     getRouteInfo,
@@ -46,5 +48,7 @@ export {
     HttpContent,
     StringContent,
     JsonContent,
+    BinaryContent,
+    TemplateContent,
     results
 };

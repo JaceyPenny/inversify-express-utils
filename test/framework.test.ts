@@ -232,7 +232,7 @@ describe("Integration Tests:", () => {
                 caseSensitive: true
             });
 
-            server = new InversifyExpressServer(container, customRouter);
+            server = new InversifyExpressServer(container, { customRouter });
             const app = server.build();
 
             const expectedSuccess = supertest(app)
@@ -264,7 +264,7 @@ describe("Integration Tests:", () => {
                 }
             }
 
-            server = new InversifyExpressServer(container, null, { rootPath: "/api/v1" });
+            server = new InversifyExpressServer(container, { routingConfig: { rootPath: "/api/v1" } });
 
             return supertest(server.build())
                 .get("/api/v1/ping/endpoint")
@@ -792,14 +792,14 @@ describe("Integration Tests:", () => {
                 ): Promise<interfaces.Principal> {
                     return Promise.resolve({
                         details: "something",
-                        isAuthenticated: () => Promise.resolve(true),
-                        isResourceOwner: () => Promise.resolve(true),
-                        isInRole: () => Promise.resolve(true)
+                        isAuthenticated: () => true,
+                        isInState: () => true,
+                        isInRole: () => true
                     } as interfaces.Principal);
                 }
             }
 
-            server = new InversifyExpressServer(container, null, null, null, CustomAuthProvider);
+            server = new InversifyExpressServer(container, { authProvider: CustomAuthProvider });
             supertest(server.build())
                 .get("/")
                 .expect(200, "something", done);
