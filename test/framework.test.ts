@@ -99,50 +99,6 @@ describe("Integration Tests:", () => {
                 .expect(500, done);
         });
 
-        it("should work for methods which call nextFunc()", (done) => {
-
-            @controller("/")
-            class TestController {
-                @httpGet("/") public getTest(req: express.Request, res: express.Response, nextFunc: express.NextFunction) {
-                    nextFunc();
-                }
-
-                @httpGet("/") public getTest2(req: express.Request, res: express.Response) {
-                    return "GET";
-                }
-            }
-
-            server = new InversifyExpressServer(container);
-            supertest(server.build())
-                .get("/")
-                .expect(200, "GET", done);
-        });
-
-
-        it("should work for async methods which call nextFunc()", (done) => {
-
-            @controller("/")
-            class TestController {
-                @httpGet("/") public getTest(req: express.Request, res: express.Response, nextFunc: express.NextFunction) {
-                    return new Promise(((resolve) => {
-                        setTimeout(() => {
-                            nextFunc();
-                            resolve();
-                        }, 100, "GET");
-                    }));
-                }
-
-                @httpGet("/") public getTest2(req: express.Request, res: express.Response) {
-                    return "GET";
-                }
-            }
-
-            server = new InversifyExpressServer(container);
-            supertest(server.build())
-                .get("/")
-                .expect(200, "GET", done);
-        });
-
 
         it("should work for async methods called by nextFunc()", (done) => {
 
@@ -738,25 +694,6 @@ describe("Integration Tests:", () => {
                 .get("/")
                 .set("Cookie", "Cookie=hey")
                 .expect(200, "hey", done);
-        });
-
-        it("should bind a method parameter to the next function", (done) => {
-
-            @controller("/")
-            class TestController {
-                @httpGet("/") public getTest(@next() nextFunc: any) {
-                    let err = new Error("foo");
-                    return nextFunc();
-                }
-                @httpGet("/") public getResult() {
-                    return "foo";
-                }
-            }
-
-            server = new InversifyExpressServer(container);
-            supertest(server.build())
-                .get("/")
-                .expect(200, "foo", done);
         });
 
         it("should bind a method parameter to a principal with null (empty) details when no AuthProvider is set.", (done) => {
