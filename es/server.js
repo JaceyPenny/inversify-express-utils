@@ -189,7 +189,8 @@ var InversifyExpressServer = /** @class */ (function () {
     };
     InversifyExpressServer.prototype.resolveFinishHandler = function () {
         if (this._FinishHandler) {
-            return this._container.get(TYPE.FinishHandler).handle;
+            var handler = this._container.get(TYPE.FinishHandler);
+            return handler.handle.bind(handler);
         }
         else {
             return function (_) { };

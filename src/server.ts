@@ -226,7 +226,8 @@ export class InversifyExpressServer {
 
     private resolveFinishHandler(): express.RequestHandler {
         if (this._FinishHandler) {
-            return this._container.get<interfaces.FinishHandler>(TYPE.FinishHandler).handle;
+            const handler = this._container.get<interfaces.FinishHandler>(TYPE.FinishHandler);
+            return handler.handle.bind(handler);
         } else {
             return (_) => { /* do nothing */ };
         }
