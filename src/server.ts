@@ -232,7 +232,12 @@ export class InversifyExpressServer {
 
             const httpContext = this._getHttpContext(req);
             const handler = httpContext.container.get<interfaces.FinishHandler>(TYPE.FinishHandler);
-            handler.handle(req);
+            try {
+                handler.handle(req);
+            } catch (error) {
+                // do nothing; we can't risk propagating an error since the response
+                // should've been sent by this point
+            }
         };
     }
 
