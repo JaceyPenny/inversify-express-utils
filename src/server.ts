@@ -26,6 +26,7 @@ interface InversifyExpressServerOptions {
     customApp?: express.Application | null;
     authProvider?: { new(): interfaces.AuthProvider } | null;
     finishHandler?: { new(): interfaces.FinishHandler } | null;
+    contextInitializer?: (context: interfaces.HttpContext) => void | null;
     forceControllers?: boolean;
 }
 
@@ -39,6 +40,7 @@ export class InversifyExpressServer {
     private _routingConfig: interfaces.RoutingConfig;
     private _AuthProvider: { new(): interfaces.AuthProvider };
     private _FinishHandler: { new(): interfaces.FinishHandler };
+    private _contextInitializer: (context: interfaces.HttpContext) => void;
     private _forceControllers: boolean;
 
     /**
@@ -72,6 +74,7 @@ export class InversifyExpressServer {
             this._FinishHandler = options.finishHandler;
             container.bind<interfaces.FinishHandler>(TYPE.FinishHandler).to(this._FinishHandler);
         }
+        this._contextInitializer = options.contextInitializer || function(c) { /* do nothing */ };
     }
 
     /**
@@ -325,7 +328,7 @@ export class InversifyExpressServer {
         next: express.NextFunction
     ) {
         const principal = await this._getCurrentUser(req, res, next);
-        return {
+        const context = {
             request: req,
             response: res,
             // We use a childContainer for each request so we can be
@@ -333,6 +336,8 @@ export class InversifyExpressServer {
             container: this._container.createChild(),
             user: principal
         };
+        this._contextInitializer(context);
+        return context;
     }
 
     private async _getCurrentUser(

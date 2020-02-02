@@ -11,6 +11,7 @@ interface InversifyExpressServerOptions {
     finishHandler?: {
         new (): interfaces.FinishHandler;
     } | null;
+    contextInitializer?: (context: interfaces.HttpContext) => void | null;
     forceControllers?: boolean;
 }
 export declare class InversifyExpressServer {
@@ -22,6 +23,7 @@ export declare class InversifyExpressServer {
     private _routingConfig;
     private _AuthProvider;
     private _FinishHandler;
+    private _contextInitializer;
     private _forceControllers;
     /**
      * Wrapper for the express server.
