@@ -225,12 +225,16 @@ export class InversifyExpressServer {
     }
 
     private resolveFinishHandler(): express.RequestHandler {
-        if (this._FinishHandler) {
+        return (req) => {
+            if (!this._FinishHandler) {
+                return;
+            }
+
+            const httpContext = this._getHttpContext(req);
+            httpContext.container.bind<interfaces.HttpContext>(TYPE.HttpContext).toConstantValue(httpContext);
             const handler = this._container.get<interfaces.FinishHandler>(TYPE.FinishHandler);
-            return handler.handle.bind(handler);
-        } else {
-            return (_) => { /* do nothing */ };
-        }
+            handler.handle(req);
+        };
     }
 
     private copyHeadersTo(headers: OutgoingHttpHeaders, target: express.Response) {
