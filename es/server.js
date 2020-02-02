@@ -194,8 +194,7 @@ var InversifyExpressServer = /** @class */ (function () {
                 return;
             }
             var httpContext = _this._getHttpContext(req);
-            httpContext.container.bind(TYPE.HttpContext).toConstantValue(httpContext);
-            var handler = _this._container.get(TYPE.FinishHandler);
+            var handler = httpContext.container.get(TYPE.FinishHandler);
             handler.handle(req);
         };
     };

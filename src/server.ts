@@ -231,8 +231,7 @@ export class InversifyExpressServer {
             }
 
             const httpContext = this._getHttpContext(req);
-            httpContext.container.bind<interfaces.HttpContext>(TYPE.HttpContext).toConstantValue(httpContext);
-            const handler = this._container.get<interfaces.FinishHandler>(TYPE.FinishHandler);
+            const handler = httpContext.container.get<interfaces.FinishHandler>(TYPE.FinishHandler);
             handler.handle(req);
         };
     }
