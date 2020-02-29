@@ -15,6 +15,7 @@ import { StringContent } from "./content/stringContent";
 import { JsonContent } from "./content/jsonContent";
 import { HttpContent } from "./content/httpContent";
 import { BinaryContent } from "./content/binaryContent";
+import { FileContent } from "./content/fileContent";
 
 export {
     getRouteInfo,
@@ -50,5 +51,6 @@ export {
     JsonContent,
     BinaryContent,
     TemplateContent,
+    FileContent,
     results
 };

@@ -13,4 +13,5 @@ import { StringContent } from "./content/stringContent";
 import { JsonContent } from "./content/jsonContent";
 import { HttpContent } from "./content/httpContent";
 import { BinaryContent } from "./content/binaryContent";
-export { getRouteInfo, getRawMetadata, cleanUpMetadata, interfaces, InversifyExpressServer, controller, httpMethod, httpGet, httpPut, httpPost, httpPatch, httpHead, all, httpDelete, TYPE, request, response, requestParam, queryParam, requestBody, requestHeaders, cookies, next, principal, BaseHttpController, injectHttpContext, BaseMiddleware, HttpResponseMessage, HttpContent, StringContent, JsonContent, BinaryContent, TemplateContent, results };
+import { FileContent } from "./content/fileContent";
+export { getRouteInfo, getRawMetadata, cleanUpMetadata, interfaces, InversifyExpressServer, controller, httpMethod, httpGet, httpPut, httpPost, httpPatch, httpHead, all, httpDelete, TYPE, request, response, requestParam, queryParam, requestBody, requestHeaders, cookies, next, principal, BaseHttpController, injectHttpContext, BaseMiddleware, HttpResponseMessage, HttpContent, StringContent, JsonContent, BinaryContent, TemplateContent, FileContent, results };
