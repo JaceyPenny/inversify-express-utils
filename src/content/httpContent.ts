@@ -7,7 +7,7 @@ export abstract class HttpContent {
     return this._headers;
   }
 
-  public get type(): "binary" | "text" | "template" {
+  public get type(): "binary" | "text" | "template" | "file" {
     return "text";
   }
 

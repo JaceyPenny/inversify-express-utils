@@ -214,34 +214,39 @@ var InversifyExpressServer = /** @class */ (function () {
     };
     InversifyExpressServer.prototype.handleHttpResponseMessage = function (message, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var buffer, templateFilePath, templateData, _a, _b;
+            var buffer, templateFilePath, templateData, filePath, _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         this.copyHeadersTo(message.headers, res);
-                        if (!(message.content !== undefined)) return [3 /*break*/, 5];
+                        if (!(message.content !== undefined)) return [3 /*break*/, 6];
                         this.copyHeadersTo(message.content.headers, res);
                         if (!(message.content.type === "binary")) return [3 /*break*/, 1];
                         buffer = message.content.content;
                         res.status(message.statusCode).end(buffer);
-                        return [3 /*break*/, 4];
+                        return [3 /*break*/, 5];
                     case 1:
                         if (!(message.content.type === "template")) return [3 /*break*/, 2];
                         templateFilePath = message.content.templateFilePath;
                         templateData = message.content.templateData;
                         res.status(message.statusCode).render(templateFilePath, templateData);
-                        return [3 /*break*/, 4];
+                        return [3 /*break*/, 5];
                     case 2:
+                        if (!(message.content.type === "file")) return [3 /*break*/, 3];
+                        filePath = message.content.filePath;
+                        res.status(200).sendFile(filePath);
+                        return [3 /*break*/, 5];
+                    case 3:
                         _b = (_a = res.status(message.statusCode)).send;
                         return [4 /*yield*/, message.content.readAsStringAsync()];
-                    case 3:
+                    case 4:
                         _b.apply(_a, [_c.sent()]);
-                        _c.label = 4;
-                    case 4: return [3 /*break*/, 6];
-                    case 5:
+                        _c.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
                         res.sendStatus(message.statusCode);
-                        _c.label = 6;
-                    case 6: return [2 /*return*/];
+                        _c.label = 7;
+                    case 7: return [2 /*return*/];
                 }
             });
         });

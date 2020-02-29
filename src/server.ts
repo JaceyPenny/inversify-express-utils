@@ -268,6 +268,9 @@ export class InversifyExpressServer {
                 const templateFilePath = (message.content as any).templateFilePath;
                 const templateData = (message.content as any).templateData;
                 res.status(message.statusCode).render(templateFilePath, templateData);
+            } else if (message.content.type === "file") {
+                const filePath = (message.content as any).filePath;
+                res.status(200).sendFile(filePath);
             } else {
                 res.status(message.statusCode)
                     // If the content is a number, ensure we change it to a string, else our content is treated
